@@ -1,4 +1,8 @@
 # fluent-plugin-application-insights
+
+[![Gem Version](https://badge.fury.io/rb/fluent-plugin-application-insights.svg)](https://badge.fury.io/rb/fluent-plugin-application-insights)
+[![Build Status](https://travis-ci.com/Microsoft/fluent-plugin-application-insights.svg?token=dmd7Dt3MYHNnSmMMkmx2&branch=master)](https://travis-ci.com/Microsoft/fluent-plugin-application-insights)
+
 This is the [Fluentd](https://fluentd.org/) output plugin for [Azure Application Insights](https://docs.microsoft.com/azure/application-insights/)
 
 Application Insights is an extensible Application Performance Management (APM) service for web developers on multiple platforms.
