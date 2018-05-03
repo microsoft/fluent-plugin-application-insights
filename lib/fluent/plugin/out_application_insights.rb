@@ -11,6 +11,8 @@ module Fluent::Plugin
 
     attr_accessor :tc
 
+    helpers :record_accessor
+
     # The Application Insights instrumentation key
     config_param :instrumentation_key, :string
     # The batch size to send data to Application Insights service.
@@ -59,8 +61,11 @@ module Fluent::Plugin
       context_tag_keys.concat Channel::Contracts::Session.json_mappings.values
       context_tag_keys.concat Channel::Contracts::User.json_mappings.values
 
-      context_tag_sources.keys.each do |tag|
+      @context_tag_accessors = {}
+      context_tag_sources.each do |tag, property_path|
         raise ArgumentError.new("Context tag '#{tag}' is invalid!") unless context_tag_keys.include?(tag)
+
+        @context_tag_accessors[tag] = record_accessor_create(property_path)
       end
     end
 
@@ -136,9 +141,9 @@ module Fluent::Plugin
       return if @context_tag_sources.length == 0
 
       record["tags"] = record["tags"] || {}
-      @context_tag_sources.each do |context_tag, source_property|
-        context_value = record.delete source_property
-        record["tags"][context_tag] = context_value if context_value
+      @context_tag_accessors.each do |tag, accessor|
+        tag_value = accessor.call(record)
+        record["tags"][tag] = tag_value if !tag_value.nil?
       end
     end
 
@@ -164,16 +169,16 @@ module Fluent::Plugin
       context.instrumentation_key = @instrumentation_key
       return context if @context_tag_sources.length == 0
 
-      @context_tag_sources.each do |context_tag, source_property|
-        if record[source_property]
-          set_context_tag context, context_tag, record[source_property]
-        end
+      @context_tag_accessors.each do |tag, accessor|
+        set_context_tag context, tag, accessor.call(record)
       end
 
       return context
     end
 
     def set_context_tag(context, tag_name, tag_value)
+      return if tag_value.nil?
+
       context_set = [context.application, context.cloud, context.device, context.location, context.operation, context.session, context.user]
       context_set.each do |c|
         c.class.json_mappings.each do |attr, name|
