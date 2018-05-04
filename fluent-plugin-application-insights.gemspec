@@ -8,13 +8,8 @@ Gem::Specification.new do |spec|
   spec.email   = ["ctdiagcore@microsoft.com"]
 
   spec.summary       = "This is the fluentd output plugin for Azure Application Insights."
-  spec.description   = <<-eos
-  Fluentd output plugin for Azure Application Insights.
-  Application Insights is an extensible Application Performance Management (APM) service for web developers on multiple platforms.
-  Use it to monitor your live web application. It will automatically detect performance anomalies. It includes powerful analytics
-  tools to help you diagnose issues and to understand what users actually do with your app.
-  It's designed to help you continuously improve performance and usability.
-eos
+  spec.description   = "Fluentd output plugin for Azure Application Insights."
+
   spec.homepage      = "https://github.com/Microsoft/fluent-plugin-application-insights"
   spec.license       = "MIT"
 
