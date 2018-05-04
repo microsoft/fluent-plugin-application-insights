@@ -1,7 +1,7 @@
 # fluent-plugin-application-insights
 
 [![Gem Version](https://badge.fury.io/rb/fluent-plugin-application-insights.svg)](https://badge.fury.io/rb/fluent-plugin-application-insights)
-[![Build Status](https://travis-ci.com/Microsoft/fluent-plugin-application-insights.svg?token=dmd7Dt3MYHNnSmMMkmx2&branch=master)](https://travis-ci.com/Microsoft/fluent-plugin-application-insights)
+[![Build Status](https://travis-ci.org/Microsoft/fluent-plugin-application-insights.svg?branch=master)](https://travis-ci.org/Microsoft/fluent-plugin-application-insights)
 
 This is the [Fluentd](https://fluentd.org/) output plugin for [Azure Application Insights](https://docs.microsoft.com/azure/application-insights/)
 
@@ -34,18 +34,20 @@ Here is the configuration options for this plugin:
 * `standard_schema` - The parameter indicating whether the record is in standard schema. i.e., the format that is recognized by Application Insights backend (default `false`).
 If the record is not in standard schema, it will be tracked as Application Insights trace telemetry. Otherwise, the record is just forwarded to the backend. See [Standard Schema](#standard-schema) for more info.
 * `message_property` - The property name for the trace message (default `message`).
-* `time_property` - The property name for the timestamp (default `nil`). Fluentd input plugin will assign a timestamp for each emitted record, and this timestamp is used as the telemetry creation time by default. Set the `time_property` if you want to use the value of this property instead of the one assigned by the input plugin.
+* `time_property` - The property name for the timestamp (default `nil`).  
+    Fluentd input plugin will assign a timestamp for each emitted record, and this timestamp is used as the telemetry creation time by default. Set the `time_property` if you want to use the value of this property instead of the one assigned by the input plugin.
 * `severity_property` - The property name for severity level (default `severity`). If the severity property doesn't exist, the record will be treated as information level. See [Severity Level](https://docs.microsoft.com/azure/application-insights/application-insights-data-model-trace-telemetry#severity-level) for more info.
 * `severity_level_verbose` - The value of severity property that maps to Application Insights' verbose severity level (default `verbose`).
 * `severity_level_information` - The value of severity property that maps to Application Insights' information severity level (default `information`).
 * `severity_level_warning` - The value of severity property that maps to Application Insights' warning severity level (default `warning`).
 * `severity_level_error` - The value of severity property that maps to Application Insights' error severity level (default `error`).
 * `severity_level_critical` - The value of severity property that maps to Application Insights' critical severity level (default `critical`).
-* `context_tag_sources` - The dictionary that instructs the Application Insights plugin to set Application Insights context tags using record properties. In this dictionary keys are Application Insights context tags to set, and values are names of properties to use as source of data. For example:
+* `context_tag_sources` - The dictionary that instructs the Application Insights plugin to set Application Insights context tags using record properties.  
+    In this dictionary keys are Application Insights context tags to set, and values are the source properties that are used to set the context tags value. For the source property, you can specify the property name or jsonpath like syntax for nested property, see [record_accessor syntax](https://docs.fluentd.org/v1.0/articles/api-plugin-helper-record_accessor#syntax) for more info. For example:
     ```
     context_tag_sources {
       "ai.cloud.role": "kubernetes_container_name",
-      "ai.cloud.roleInstance": "kubernetes_pod_name"
+      "ai.cloud.roleInstance": "$.docker.container_id"
     }
     ```
     Here is the list of all [context tag keys](https://github.com/Microsoft/ApplicationInsights-dotnet/blob/develop/Schema/PublicSchema/ContextTagKeys.bond)

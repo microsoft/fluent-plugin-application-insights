@@ -153,13 +153,13 @@ class ApplicationInsightsOutputTest < Test::Unit::TestCase
       assert_nil envelope.data["baseData"]["properties"]
     end
 
-    test 'multiple context tag keys' do
+    test 'context tag source is nested property path' do
       config = %[
         instrumentation_key ikey
         standard_schema true
         context_tag_sources {
-          "ai.cloud.role": "kubernetes_container_name",
-          "ai.cloud.roleInstance": "kubernetes_container_id"
+          "ai.cloud.role": "$.kubernetes.container_name",
+          "ai.cloud.roleInstance": "$.kubernetes.not_exist"
         }
       ]
       d = create_driver config
@@ -169,8 +169,39 @@ class ApplicationInsightsOutputTest < Test::Unit::TestCase
         d.feed(time, {
           "name" => "telemetry name",
           "data" => { "baseType" => "RequestData", "baseData" => {} },
-          "kubernetes_container_name" => "frontend",
-          "kubernetes_container_id" => "c42c557e1615511dd3a3cb1d6e8f14984464bb0f"
+          "kubernetes" => {
+            "container_name" => "frontend",
+            "container_id" => "c42c557e1615511dd3a3cb1d6e8f14984464bb0f"
+          }
+        })
+      end
+
+      envelope = d.instance.tc.channel.queue[0]
+      assert_not_nil envelope.tags
+      assert_equal "frontend", envelope.tags["ai.cloud.role"]
+      assert_nil envelope.tags["ai.cloud.roleInstance"]
+    end
+
+    test 'multiple context tag keys' do
+      config = %[
+        instrumentation_key ikey
+        standard_schema true
+        context_tag_sources {
+          "ai.cloud.role": "kubernetes_container_name",
+          "ai.cloud.roleInstance": "$.docker.container_id"
+        }
+      ]
+      d = create_driver config
+
+      time = event_time("2011-01-02 13:14:15 UTC")
+      d.run(default_tag: 'test', shutdown: false) do
+        d.feed(time, {
+          "name" => "telemetry name",
+          "data" => { "baseType" => "RequestData", "baseData" => {} },
+          "docker" => {
+            "container_id" => "c42c557e1615511dd3a3cb1d6e8f14984464bb0f"
+          },
+          "kubernetes_container_name" => "frontend"
         })
       end
 
@@ -353,12 +384,40 @@ class ApplicationInsightsOutputTest < Test::Unit::TestCase
       assert_not_nil envelope.data.base_data.properties["other_prop"]
     end
 
+    test 'context tag source is nested property path' do
+      config = %[
+        instrumentation_key ikey
+        context_tag_sources {
+          "ai.cloud.role": "$.kubernetes.container_name",
+          "ai.cloud.roleInstance": "$.kubernetes.not_exist"
+        }
+      ]
+      d = create_driver config
+
+      time = event_time("2011-01-02 13:14:15 UTC")
+      d.run(default_tag: 'test', shutdown: false) do
+        d.feed(time, {
+          "name" => "telemetry name",
+          "data" => { "baseType" => "RequestData", "baseData" => {} },
+          "kubernetes" => {
+            "container_name" => "frontend",
+            "container_id" => "c42c557e1615511dd3a3cb1d6e8f14984464bb0f"
+          }
+        })
+      end
+
+      envelope = d.instance.tc.channel.queue[0]
+      assert_not_nil envelope.tags
+      assert_equal "frontend", envelope.tags["ai.cloud.role"]
+      assert_nil envelope.tags["ai.cloud.roleInstance"]
+    end
+
     test 'multiple context tag keys' do
       config = %[
         instrumentation_key ikey
         context_tag_sources {
           "ai.cloud.role": "kubernetes_container_name",
-          "ai.cloud.roleInstance": "kubernetes_container_id"
+          "ai.cloud.roleInstance": "$.docker.container_id"
         }
       ]
       d = create_driver config
@@ -367,8 +426,10 @@ class ApplicationInsightsOutputTest < Test::Unit::TestCase
       d.run(default_tag: 'test', shutdown: false) do
         d.feed(time, {
           "message" => "my message",
-          "kubernetes_container_name" => "frontend",
-          "kubernetes_container_id" => "c42c557e1615511dd3a3cb1d6e8f14984464bb0f"
+          "docker" => {
+            "container_id" => "c42c557e1615511dd3a3cb1d6e8f14984464bb0f"
+          },
+          "kubernetes_container_name" => "frontend"
         })
       end
 
