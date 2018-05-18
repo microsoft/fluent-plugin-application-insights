@@ -123,8 +123,12 @@ module Fluent::Plugin
 
           envelope = Channel::Contracts::Envelope.new
           Channel::Contracts::Envelope.json_mappings.each do |attr, name|
-            envelope.send(:"#{attr}=", record[name]) if record[name]
+            property = record.delete(name)
+            envelope.send(:"#{attr}=", property) if property
           end
+
+          # There could be extra properties added during the fluentd pipeline. Merge the extra properties so they are not lost.
+          merge_extra_properties_standard_schema record, envelope
 
           @tc.channel.queue.push(envelope)
         else
@@ -145,6 +149,14 @@ module Fluent::Plugin
         tag_value = accessor.call(record)
         record["tags"][tag] = tag_value if !tag_value.nil?
       end
+    end
+
+    def merge_extra_properties_standard_schema(record, envelope)
+      return if record.empty?
+
+      envelope.data["baseData"]["properties"] ||= {}
+      envelope.data["baseData"]["properties"].merge!(record)
+      stringify_properties(envelope.data["baseData"]["properties"])
     end
 
     def process_non_standard_schema_log(record, time)
