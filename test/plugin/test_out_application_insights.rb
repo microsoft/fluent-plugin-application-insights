@@ -83,6 +83,15 @@ class ApplicationInsightsOutputTest < Test::Unit::TestCase
       assert_true logs.all?{ |log| log.include?("Unknown telemetry type unknown") }
     end
 
+    test 'extra properties are not lost after processing' do
+      time = event_time("2011-01-02 13:14:15 UTC")
+      @d.run(default_tag: 'test', shutdown: false) do
+        @d.feed(time, {"name" => "telemetry name", "data" => { "baseType" => "RequestData", "baseData" => {} }, "kubernetes" => { "pod_name" => "frontend" }})
+      end
+
+      envelope = @d.instance.tc.channel.queue[0]
+      assert_equal({ "kubernetes" => "{\"pod_name\":\"frontend\"}" }, envelope.data["baseData"]["properties"])
+    end
   end
 
   sub_test_case 'set context on standard schema event' do
@@ -149,8 +158,12 @@ class ApplicationInsightsOutputTest < Test::Unit::TestCase
       envelope = d.instance.tc.channel.queue[0]
       assert_not_nil envelope.tags
       assert_equal "frontend", envelope.tags["ai.cloud.role"]
-      # Extra property that is not part of Envelope (kubernetes_container_name, other_prop) is ignored
-      assert_nil envelope.data["baseData"]["properties"]
+
+      extra_properties = {
+        "kubernetes_container_name" => "frontend",
+        "other_prop" => "prop value"
+      }
+      assert_equal extra_properties, envelope.data["baseData"]["properties"]
     end
 
     test 'context tag source is nested property path' do
