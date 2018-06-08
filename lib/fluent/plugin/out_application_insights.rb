@@ -132,11 +132,11 @@ module Fluent::Plugin
 
           @tc.channel.queue.push(envelope)
         else
-          log.warn "Unknown telemetry type #{base_type}. Event will be treated as as non standard schema event."
+          log.debug "Unknown telemetry type #{base_type}. Event will be treated as as non standard schema event."
           process_non_standard_schema_log record, time
         end
       else
-        log.warn "The event does not meet the standard schema of Application Insights output. Missing name, data, baseType or baseData property. Event will be treated as as non standard schema event."
+        log.debug "The event does not meet the standard schema of Application Insights output. Missing name, data, baseType or baseData property. Event will be treated as as non standard schema event."
         process_non_standard_schema_log record, time
       end
     end

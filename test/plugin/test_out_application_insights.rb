@@ -58,6 +58,7 @@ class ApplicationInsightsOutputTest < Test::Unit::TestCase
 
     test 'event missing required properties is treated as non standard schema' do
       time = event_time("2011-01-02 13:14:15 UTC")
+      @d.instance.log.level = "debug"
       @d.run(default_tag: 'test', shutdown: false) do
           @d.feed(time, {"data" => {"baseType" => "RequestData", "baseData" => "data"}})
           @d.feed(time, {"name" => "telemetry name"})
@@ -75,11 +76,13 @@ class ApplicationInsightsOutputTest < Test::Unit::TestCase
 
     test 'event with unknown data type is treated as non standard schema' do
       time = event_time("2011-01-02 13:14:15 UTC")
+      @d.instance.log.level = "debug"
       @d.run(default_tag: 'test', shutdown: false) do
           @d.feed(time, {"name" => "telemetry name", "data" => {"baseType" => "unknown", "baseData" => {}}})
       end
 
       logs = @d.instance.log.out.logs
+      assert_true logs.length > 0
       assert_true logs.all?{ |log| log.include?("Unknown telemetry type unknown") }
     end
 
