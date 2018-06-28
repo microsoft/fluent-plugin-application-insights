@@ -5,7 +5,7 @@ Gem::Specification.new do |spec|
   spec.name    = "fluent-plugin-application-insights"
   spec.version = "0.2.1"
   spec.authors = ["Microsoft Corporation"]
-  spec.email   = ["ctdiagcore@microsoft.com"]
+  spec.email   = ["azure-tools@microsoft.com"]
 
   spec.summary       = "This is the fluentd output plugin for Azure Application Insights."
   spec.description   = "Fluentd output plugin for Azure Application Insights."
