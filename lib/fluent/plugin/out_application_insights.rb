@@ -112,13 +112,14 @@ module Fluent::Plugin
     end
 
     def process_standard_schema_log(record, time)
-      if record["name"] && record["data"] && record["data"].is_a?(Hash) && record["data"]["baseType"] && record["data"]["baseData"]
+      if record["data"] && record["data"].is_a?(Hash) && record["data"]["baseType"] && record["data"]["baseData"]
         base_type = record["data"]["baseType"]
 
         if TELEMETRY_TYPES.include? base_type
           # If the record is processed by json parser plugin, e.g., in_http use it by default, the time property will be removed. Add it back in this case.
           record["time"] ||= time.iso8601(7)
           record["iKey"] = @instrumentation_key
+          set_name_property(record) if !record["name"]
           set_context_standard_schema record
 
           envelope = Channel::Contracts::Envelope.new
@@ -136,9 +137,16 @@ module Fluent::Plugin
           process_non_standard_schema_log record, time
         end
       else
-        log.debug "The event does not meet the standard schema of Application Insights output. Missing name, data, baseType or baseData property. Event will be treated as as non standard schema event."
+        log.debug "The event does not meet the standard schema of Application Insights output. Missing data, baseType or baseData property. Event will be treated as as non standard schema event."
         process_non_standard_schema_log record, time
       end
+    end
+
+    def set_name_property(record)
+      normalizedIKey = @instrumentation_key.gsub("-", "")
+      normalizedIKey = normalizedIKey.empty? ? "" : normalizedIKey + "."
+      type = record["data"]["baseType"][0..-5]
+      record["name"] = "Microsoft.ApplicationInsights.#{normalizedIKey}#{type}"
     end
 
     def set_context_standard_schema(record)

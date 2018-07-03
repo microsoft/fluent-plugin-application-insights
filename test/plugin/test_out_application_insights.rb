@@ -60,18 +60,53 @@ class ApplicationInsightsOutputTest < Test::Unit::TestCase
       time = event_time("2011-01-02 13:14:15 UTC")
       @d.instance.log.level = "debug"
       @d.run(default_tag: 'test', shutdown: false) do
-          @d.feed(time, {"data" => {"baseType" => "RequestData", "baseData" => "data"}})
-          @d.feed(time, {"name" => "telemetry name"})
-          @d.feed(time, {"name" => "telemetry name", "data" => 2})
-          @d.feed(time, {"name" => "telemetry name", "data" => {}})
-          @d.feed(time, {"name" => "telemetry name", "data" => {"someprop" => "value"}})
-          @d.feed(time, {"name" => "telemetry name", "data" => {"baseType" => "type"}})
-          @d.feed(time, {"name" => "telemetry name", "data" => {"baseData" => "data"}})
+          @d.feed(time, {})
+          @d.feed(time, {"data" => 2})
+          @d.feed(time, {"data" => {}})
+          @d.feed(time, {"data" => {"someprop" => "value"}})
+          @d.feed(time, {"data" => {"baseType" => "type"}})
+          @d.feed(time, {"data" => {"baseData" => "data"}})
       end
 
       logs = @d.instance.log.out.logs
-      assert_equal 7, logs.length
-      assert_true logs.all?{ |log| log.include?("The event does not meet the standard schema of Application Insights output. Missing name, data, baseType or baseData property.") }
+      assert_equal 6, logs.length
+      assert_true logs.all?{ |log| log.include?("The event does not meet the standard schema of Application Insights output. Missing data, baseType or baseData property.") }
+    end
+
+    test 'event of standard schema will fill in the name property if it is empty' do
+      config = %[
+        instrumentation_key 000-000-000
+        standard_schema true
+      ]
+      d = create_driver config
+
+      time = event_time("2011-01-02 13:14:15 UTC")
+      d.run(default_tag: 'test', shutdown: false) do
+        d.feed(time, {
+          "data" => { "baseType" => "RequestData", "baseData" => {} }
+        })
+      end
+
+      envelope = d.instance.tc.channel.queue[0]
+      assert_equal "Microsoft.ApplicationInsights.000000000.Request", envelope.name
+    end
+
+    test 'event of standard schema will fill in the name property if it is empty and instrumentation key is empty' do
+      config = %[
+        instrumentation_key ""
+        standard_schema true
+      ]
+      d = create_driver config
+
+      time = event_time("2011-01-02 13:14:15 UTC")
+      d.run(default_tag: 'test', shutdown: false) do
+        d.feed(time, {
+          "data" => { "baseType" => "RequestData", "baseData" => {} }
+        })
+      end
+
+      envelope = d.instance.tc.channel.queue[0]
+      assert_equal "Microsoft.ApplicationInsights.Request", envelope.name
     end
 
     test 'event with unknown data type is treated as non standard schema' do

@@ -56,7 +56,7 @@ If the record is not in standard schema, it will be tracked as Application Insig
 
 The standard schema for Application Insights telemetry is defined [here](https://github.com/Microsoft/ApplicationInsights-Home/tree/master/EndpointSpecs/Schemas/Bond).
 
-Below is an example of a Request telemetry in standard schema format. `name`, `time`, `data`, `data.baseType` and `data.baseData` are required properties. Different telemetry types will have different properties associated with the `baseData` object.
+Below is an example of a Request telemetry in standard schema format. `data`, `data.baseType` and `data.baseData` are required properties. Different telemetry types will have different properties associated with the `baseData` object.
 
 ```
 {
