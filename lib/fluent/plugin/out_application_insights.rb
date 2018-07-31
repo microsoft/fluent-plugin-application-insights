@@ -26,15 +26,15 @@ module Fluent::Plugin
     # The property name for severity level. It will be ignored if the record is in standard schema.
     config_param :severity_property, :string, default: 'severity'
     # The value of severity property that maps to Application Insights' verbose severity level.
-    config_param :severity_level_verbose, :string, default: 'verbose'
+    config_param :severity_level_verbose, :array, value_type: :string, default: ['verbose']
     # The value of severity property that maps to Application Insights' information severity level.
-    config_param :severity_level_information, :string, default: 'information'
+    config_param :severity_level_information, :array, value_type: :string, default: ['information']
     # The value of severity property that maps to Application Insights' warning severity level.
-    config_param :severity_level_warning, :string, default: 'warning'
+    config_param :severity_level_warning, :array, value_type: :string, default: ['warning']
     # The value of severity property that maps to Application Insights' error severity level.
-    config_param :severity_level_error, :string, default: 'error'
+    config_param :severity_level_error, :array, value_type: :string, default: ['error']
     # The value of severity property that maps to Application Insights' critical severity level.
-    config_param :severity_level_critical, :string, default: 'critical'
+    config_param :severity_level_critical, :array, value_type: :string, default: ['critical']
     # The dictionary that instructs the Application Insights plugin to set Application Insights context tags using record properties.
     # In this dictionary keys are Application Insights context tags to set, and values are names of properties to use as source of data.
     config_param :context_tag_sources, :hash, default: {}, value_type: :string
@@ -45,11 +45,11 @@ module Fluent::Plugin
       super
 
       @severity_level_mapping = {}
-      @severity_level_mapping[@severity_level_verbose.downcase] = Channel::Contracts::SeverityLevel::VERBOSE
-      @severity_level_mapping[@severity_level_information.downcase] = Channel::Contracts::SeverityLevel::INFORMATION
-      @severity_level_mapping[@severity_level_warning.downcase] = Channel::Contracts::SeverityLevel::WARNING
-      @severity_level_mapping[@severity_level_error.downcase] = Channel::Contracts::SeverityLevel::ERROR
-      @severity_level_mapping[@severity_level_critical.downcase] = Channel::Contracts::SeverityLevel::CRITICAL
+      @severity_level_verbose.each { |l| @severity_level_mapping[l.downcase] = Channel::Contracts::SeverityLevel::VERBOSE }
+      @severity_level_information.each { |l| @severity_level_mapping[l.downcase] = Channel::Contracts::SeverityLevel::INFORMATION }
+      @severity_level_warning.each { |l| @severity_level_mapping[l.downcase] = Channel::Contracts::SeverityLevel::WARNING }
+      @severity_level_error.each { |l| @severity_level_mapping[l.downcase] = Channel::Contracts::SeverityLevel::ERROR }
+      @severity_level_critical.each { |l| @severity_level_mapping[l.downcase] = Channel::Contracts::SeverityLevel::CRITICAL }
 
       context_tag_keys = []
       context_tag_keys.concat Channel::Contracts::Application.json_mappings.values
