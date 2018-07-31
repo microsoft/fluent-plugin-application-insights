@@ -355,6 +355,37 @@ class ApplicationInsightsOutputTest < Test::Unit::TestCase
       assert_equal ApplicationInsights::Channel::Contracts::SeverityLevel::ERROR, envelope.data.base_data.severity_level
     end
 
+    test 'multiple severity levels' do
+      config = %[
+        instrumentation_key ikey
+        severity_property custom_severity_property
+        severity_level_critical fatal, panic
+      ]
+      d = create_driver config
+
+      time = event_time("2011-01-02 13:14:15 UTC")
+      d.run(default_tag: 'test', shutdown: false) do
+        d.feed(time, {"custom_severity_property" => "panic", "message" => "my message"})
+      end
+
+      d.run(default_tag: 'test', shutdown: false) do
+        d.feed(time, {"custom_severity_property" => "fatal", "message" => "my message"})
+      end
+
+      d.run(default_tag: 'test', shutdown: false) do
+        d.feed(time, {"custom_severity_property" => "critical", "message" => "my message"})
+      end
+
+      envelope = d.instance.tc.channel.queue[0]
+      assert_equal ApplicationInsights::Channel::Contracts::SeverityLevel::CRITICAL, envelope.data.base_data.severity_level
+
+      envelope = d.instance.tc.channel.queue[1]
+      assert_equal ApplicationInsights::Channel::Contracts::SeverityLevel::CRITICAL, envelope.data.base_data.severity_level
+      
+      envelope = d.instance.tc.channel.queue[2]
+      assert_not_equal ApplicationInsights::Channel::Contracts::SeverityLevel::CRITICAL, envelope.data.base_data.severity_level
+    end
+
     test 'properties are stringified' do
       d = create_driver
 
