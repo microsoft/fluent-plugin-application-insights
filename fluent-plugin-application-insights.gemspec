@@ -3,7 +3,7 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 
 Gem::Specification.new do |spec|
   spec.name    = "fluent-plugin-application-insights"
-  spec.version = "0.2.1"
+  spec.version = "0.2.2"
   spec.authors = ["Microsoft Corporation"]
   spec.email   = ["azure-tools@microsoft.com"]
 
