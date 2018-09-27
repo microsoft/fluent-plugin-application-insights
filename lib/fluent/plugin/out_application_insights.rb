@@ -101,8 +101,8 @@ module Fluent::Plugin
 
     def process(tag, es)
       es.each do |time, record|
-        # Convert the fluentd EventTime object to ruby Time object
-        time_ruby = Time.at(time.sec, time.nsec / 1000).utc
+        # 'time' is a Fluent::EventTime object or an Integer. Convert it to ruby Time object.
+        time_ruby = time.is_a?(Fluent::EventTime) ? Time.at(time.sec, time.nsec / 1000).utc : Time.at(time)
         if @standard_schema
           process_standard_schema_log record, time_ruby
         else
