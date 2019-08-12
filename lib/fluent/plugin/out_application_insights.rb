@@ -16,7 +16,7 @@ module Fluent::Plugin
     # The Application Insights instrumentation key
     config_param :instrumentation_key, :string
     # The service endpoint uri to push the telemetry to
-    config_param :service_endpoint_uri, :string, value_type: :string
+    config_param :service_endpoint_uri, :string, default: nil
     # The batch size to send data to Application Insights service.
     config_param :send_buffer_size, :integer, default: 1000
     # The parameter indication whether the record is in standard schema. i.e., the format that is recognized by Application Insights backend.
@@ -74,7 +74,7 @@ module Fluent::Plugin
     def start
       super
 
-      sender = Channel::AsynchronousSender.new if variable.nil? || variable.empty? else Channel::AsynchronousSender.new @service_endpoint_uri end
+      sender = Channel::AsynchronousSender.new if @service_endpoint_uri.nil? else Channel::AsynchronousSender.new @service_endpoint_uri
       queue = Channel::AsynchronousQueue.new sender
       channel = Channel::TelemetryChannel.new nil, queue
       @tc = TelemetryClient.new @instrumentation_key, channel
