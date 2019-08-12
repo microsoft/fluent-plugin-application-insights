@@ -30,6 +30,7 @@ To send data to Application Insights, add the following piece to your fluentd co
 Here is the configuration options for this plugin:
 
 * `instrumentation_key` - Required, the Application Insights instrumentation key
+* `service_endpoint_uri` - The endpoint of the Application Insights for Azure Sovereign Clouds
 * `send_buffer_size` - The batch size to send data to Application Insights service (default `1000`). Setting this to a large size will usually result in better output throughput.
 * `standard_schema` - The parameter indicating whether the record is in standard schema. i.e., the format that is recognized by Application Insights backend (default `false`).
 If the record is not in standard schema, it will be tracked as Application Insights trace telemetry. Otherwise, the record is just forwarded to the backend. See [Standard Schema](#standard-schema) for more info.
