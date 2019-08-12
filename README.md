@@ -1,4 +1,4 @@
-# fluent-plugin-application-insights
+# [UNSUPPORTED] fluent-plugin-application-insights
 
 [![Gem Version](https://badge.fury.io/rb/fluent-plugin-application-insights.svg)](https://badge.fury.io/rb/fluent-plugin-application-insights)
 [![Build Status](https://travis-ci.org/Microsoft/fluent-plugin-application-insights.svg?branch=master)](https://travis-ci.org/Microsoft/fluent-plugin-application-insights)
